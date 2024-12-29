@@ -2,6 +2,8 @@
  Toliss A346 mapping for the Yawman Arrow By Ryan Mikulovsky, CC0 1.0. 
  
  Initial commit: 2024-12-22
+ Update 2024/12/29
+  * Use a table to define views for easier future editing
  
  Inspired by Yawman's mapping for the MSFS PMDG 777.
  Thanks for Thomas Nield for suggesting looking into Lua for better controller support in XP12. Button numbers and their variable names came from Thomas.
@@ -79,6 +81,20 @@ local dref_LRStandard = {
 	chaseView = "sim/view/chase"
 }
 
+-- To find view coordinates for below, set true to disable left seat view (dpad up plus dpad left) and print current view coordinates to log.txt
+local printViewCoordinates = false -- set true to enable printing coordinates to X-Plane 12\Log.txt using DPad Up + DPad Left
+
+-- Copy the output values directly to the correct key
+local views = {
+	leftSeat = {-0.45494464039803,0.76279902458191,-35.311603546143,0.75000005960464,-14.000000953674},
+	rightSeat = {0.5757697224617,0.76279902458191,-35.298114776611,0.75000005960464,-14.000000953674},
+	glareshield = {0.0091319996863604,0.71823000907898,-35.241508483887,0.37499603629112,-25.3332862854},
+	radios = {0.010030999779701,0.76820802688599,-35.364841461182,0.37499603629112,-70.333290100098},
+	FMS = {-0.17268747091293,0.44188448786736,-35.623962402344,0.15007637441158,-53.675842285156},
+	overhead = {0.010196999646723,0.4507269859314,-35.308120727539,360,68.333335876465},
+	EFBor45Left = {-0.83350098133087,0.51395100355148,-35.499755859375,294.07540893555,-31.477380752563},
+	pilotThrottles = {-0.36463499069214,0.76279902458191,-35.310436248779,22.80143737793,-48.041206359863}
+}
 
 -- Clean up the code with this
 local NoCommand = "sim/none/none"
@@ -354,32 +370,32 @@ function multipressTolissA346_buttons()
 				-- Cockpit camera height not implemented as it deals with the rudder axes.....
 			if sp4_pressed and not MULTI_SIXPACK_PRESSED then
 				if dpad_up_pressed then
-					-- EFB but this doesn't quite work. A346.
+					-- EFB but this doesn't quite work. A333.
 					--set_pilots_head(-0.60079902410507,1.5304770469666,-11.694169998169,306.1875,-17.333335876465)
 				else
-					-- Glareshield A346 +++
-					set_pilots_head(0.0091319996863604,0.71823000907898,-35.241508483887,0.37499603629112,-25.3332862854)
+					-- Glareshield A333 +++
+					set_pilots_head(views.glareshield[1],views.glareshield[2],views.glareshield[3],views.glareshield[4],views.glareshield[5])
 				end
 				MULTI_SIXPACK_PRESSED = true
 			elseif sp2_pressed and not MULTI_SIXPACK_PRESSED then
-				-- Nav, CDU, Transponder, etc A346 +++
-				set_pilots_head(0.010030999779701,0.76820802688599,-35.364841461182,0.37499603629112,-70.333290100098)
+				-- Nav, CDU, Transponder, etc A333 +++
+				set_pilots_head(views.radios[1],views.radios[2],views.radios[3],views.radios[4],views.radios[5])
 				MULTI_SIXPACK_PRESSED = true
 			elseif sp5_pressed and not MULTI_SIXPACK_PRESSED then
-				-- FMS A346 ++
-				set_pilots_head(-0.17268747091293,0.44188448786736,-35.623962402344,0.15007637441158,-53.675842285156)
+				-- FMS A333 ++
+				set_pilots_head(views.FMS[1],views.FMS[2],views.FMS[3],views.FMS[4],views.FMS[5])
 				MULTI_SIXPACK_PRESSED = true
 			elseif sp1_pressed and not MULTI_SIXPACK_PRESSED then
-				-- Overhead panel A346 +++
-				set_pilots_head(0.010196999646723,0.4507269859314,-35.308120727539,360,68.333335876465)
+				-- Overhead panel A333 +++
+				set_pilots_head(views.overhead[1],views.overhead[2],views.overhead[3],views.overhead[4],views.overhead[5])
 				MULTI_SIXPACK_PRESSED = true
 			elseif sp3_pressed and not MULTI_SIXPACK_PRESSED then
-				-- A346 tablet/EFB ++
-				set_pilots_head(-0.83350098133087,0.51395100355148,-35.499755859375,294.07540893555,-31.477380752563)
+				-- A333 future tablet/EFB area, maybe ++
+				set_pilots_head(views.EFBor45Left[1],views.EFBor45Left[2],views.EFBor45Left[3],views.EFBor45Left[4],views.EFBor45Left[5])
 				MULTI_SIXPACK_PRESSED = true
 			elseif sp6_pressed and not MULTI_SIXPACK_PRESSED then
-				-- A346 pilot's view of throttles etc ++
-				set_pilots_head(-0.36463499069214,0.76279902458191,-35.310436248779,22.80143737793,-48.041206359863)
+				-- A333 pilot's view of throttles etc ++
+				set_pilots_head(views.pilotThrottles[1],views.pilotThrottles[2],views.pilotThrottles[3],views.pilotThrottles[4],views.pilotThrottles[5])
 				MULTI_SIXPACK_PRESSED = true
 			end
 			
@@ -410,14 +426,18 @@ function multipressTolissA346_buttons()
 			end
 			
 			if dpad_left_pressed then
-				-- Pilot's seat A346
-				--headX, headY, headZ, heading, pitch = get_pilots_head()
-				--print(headX .. "," .. headY .. "," .. headZ .. "," .. heading .. "," .. pitch)
-				set_pilots_head(-0.45494464039803,0.76279902458191,-35.311603546143,0.75000005960464,-14.000000953674)
+				-- Pilot's seat A333
+				if printViewCoordinates then
+					headX, headY, headZ, heading, pitch = get_pilots_head()
+					print(headX .. "," .. headY .. "," .. headZ .. "," .. heading .. "," .. pitch)
+				else
+					set_pilots_head(views.leftSeat[1],views.leftSeat[2],views.leftSeat[3],views.leftSeat[4],views.leftSeat[5])
+				end
+				
 
 			elseif dpad_right_pressed then
-				-- Copilot's seat A346
-				set_pilots_head(0.5757697224617,0.76279902458191,-35.298114776611,0.75000005960464,-14.000000953674)
+				-- Copilot's seat A333
+				set_pilots_head(views.rightSeat[1],views.rightSeat[2],views.rightSeat[3],views.rightSeat[4],views.rightSeat[5])
 
 			end
 
